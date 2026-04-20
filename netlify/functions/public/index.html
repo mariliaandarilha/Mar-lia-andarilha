@@ -1,1 +1,617 @@
-placeholder
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marília · World Traveler</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#12100e;--cream:#f7f2ea;--sand:#e9e0d0;--gold:#c8973a;--gold-l:#e4b85a;--teal:#2a7a6a;--rust:#b84c30;--visited:#c8973a;--ocean:#bdd5e0;--unvisited:#d5cfc6;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--cream);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+header{background:var(--ink);color:var(--cream);padding:24px 32px 20px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;overflow:hidden;}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(200,151,58,.1),transparent 60%);pointer-events:none;}
+.h-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,36px);font-weight:600;line-height:1;}
+.h-title em{color:var(--gold);font-style:italic;}
+.h-sub{font-size:10px;color:rgba(247,242,234,.4);margin-top:5px;letter-spacing:2.5px;text-transform:uppercase;}
+.stats{display:flex;gap:22px;flex-wrap:wrap;}
+.stat{text-align:center;}
+.sn{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);display:block;line-height:1;}
+.sl{font-size:10px;color:rgba(247,242,234,.4);text-transform:uppercase;letter-spacing:1.2px;}
+
+nav{background:var(--sand);border-bottom:1px solid rgba(18,16,14,.08);display:flex;overflow-x:auto;scrollbar-width:none;}
+nav::-webkit-scrollbar{display:none;}
+nav button{padding:12px 20px;background:none;border:none;border-bottom:2px solid transparent;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(18,16,14,.4);cursor:pointer;white-space:nowrap;transition:all .2s;margin-bottom:-2px;}
+nav button.active,nav button:hover{color:var(--ink);border-bottom-color:var(--gold);}
+
+main{max-width:1380px;margin:0 auto;padding:24px 18px;}
+.tab{display:none;}.tab.active{display:block;}
+
+/* MAP */
+.map-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.map-bar h2{font-family:'Cormorant Garamond',serif;font-size:20px;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(18,16,14,.5);}
+.ld{width:11px;height:11px;border-radius:2px;}
+
+#world-map{background:var(--ocean);border-radius:12px;border:1px solid rgba(18,16,14,.07);overflow:hidden;cursor:crosshair;}
+#world-map svg{width:100%;height:auto;display:block;}
+.country{fill:var(--unvisited);stroke:#fff;stroke-width:.5;transition:fill .25s,opacity .2s;cursor:pointer;}
+.country:hover{opacity:.72;}
+.country.visited{fill:var(--visited);}
+.country.selected{fill:var(--rust);}
+
+#tooltip{position:fixed;background:var(--ink);color:var(--cream);padding:6px 12px;border-radius:6px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.35);}
+#tooltip.show{opacity:1;}
+#tooltip strong{color:var(--gold);}
+
+#country-panel{margin-top:16px;background:#fff;border-radius:12px;border:1px solid var(--sand);padding:20px;display:none;animation:fadeUp .3s ease;}
+#country-panel.show{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.ph h3{font-family:'Cormorant Garamond',serif;font-size:19px;}
+.pacts{display:flex;gap:7px;flex-wrap:wrap;}
+.btn{padding:8px 15px;border-radius:7px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:none;letter-spacing:.5px;transition:all .2s;}
+.btn-gold{background:var(--gold);color:#fff;}.btn-gold:hover{background:var(--gold-l);}
+.btn-teal{background:var(--teal);color:#fff;}.btn-teal:hover{background:#35907e;}
+.btn-out{background:none;border:1.5px solid var(--sand);color:var(--ink);}.btn-out:hover{border-color:var(--gold);}
+.sec-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(18,16,14,.4);margin-bottom:9px;}
+.city-row{display:flex;gap:7px;margin-bottom:10px;}
+.city-row input{flex:1;padding:9px 12px;border:1.5px solid var(--sand);border-radius:7px;font-family:'Outfit',sans-serif;font-size:13px;outline:none;background:var(--cream);transition:border-color .2s;}
+.city-row input:focus{border-color:var(--gold);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--sand);padding:5px 10px;border-radius:18px;font-size:11px;display:flex;align-items:center;gap:4px;}
+.chip button{background:none;border:none;cursor:pointer;color:rgba(18,16,14,.35);font-size:14px;padding:0;transition:color .2s;}.chip button:hover{color:var(--rust);}
+.notes-area{margin-top:12px;}
+.notes-area textarea{width:100%;padding:10px 12px;border:1.5px solid var(--sand);border-radius:7px;font-family:'Outfit',sans-serif;font-size:12px;resize:vertical;min-height:68px;outline:none;background:var(--cream);transition:border-color .2s;}
+.notes-area textarea:focus{border-color:var(--gold);}
+
+/* ========== ITINERARY MODAL ========== */
+#itin-overlay{position:fixed;inset:0;background:rgba(12,10,8,.65);z-index:10000;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;backdrop-filter:blur(5px);}
+#itin-overlay.open{display:flex;}
+#itin-modal{background:var(--cream);border-radius:20px;width:100%;max-width:880px;margin:auto;box-shadow:0 28px 90px rgba(0,0,0,.4);animation:mIn .35s cubic-bezier(.16,1,.3,1);overflow:hidden;}
+@keyframes mIn{from{opacity:0;transform:translateY(28px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+.m-hero{background:var(--ink);color:var(--cream);padding:26px 30px 22px;position:relative;}
+.m-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 50%,rgba(200,151,58,.13),transparent 55%);}
+.m-hero-row{display:flex;justify-content:space-between;align-items:flex-start;position:relative;}
+.m-flag{font-size:44px;line-height:1;}
+.m-close{background:rgba(247,242,234,.12);border:none;color:var(--cream);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .2s;}.m-close:hover{background:rgba(247,242,234,.22);}
+.m-name{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,38px);font-weight:600;margin-top:10px;position:relative;}
+.m-name em{color:var(--gold);font-style:italic;}
+.m-tag{font-size:12px;color:rgba(247,242,234,.45);margin-top:5px;position:relative;letter-spacing:.3px;}
+
+.days-nav{background:var(--sand);display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid rgba(18,16,14,.06);}
+.days-nav::-webkit-scrollbar{display:none;}
+.dbt{padding:11px 16px;background:none;border:none;border-bottom:2px solid transparent;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(18,16,14,.4);cursor:pointer;white-space:nowrap;transition:all .2s;margin-bottom:-2px;}
+.dbt.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+.m-body{padding:22px 26px;max-height:62vh;overflow-y:auto;}
+.dc{display:none;animation:fadeUp .25s ease;}.dc.active{display:block;}
+
+.day-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:13px;border-bottom:1px solid var(--sand);}
+.day-num{background:var(--ink);color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.day-info h4{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;}
+.day-info p{font-size:11px;color:rgba(18,16,14,.45);margin-top:2px;}
+
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:540px){.cgrid{grid-template-columns:1fr;}}
+.ic{background:#fff;border-radius:11px;border:1px solid var(--sand);padding:14px;transition:border-color .2s;}.ic:hover{border-color:var(--gold);}
+.ic.full{grid-column:1/-1;}
+.ic-type{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(18,16,14,.35);margin-bottom:6px;}
+.ic-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;margin-bottom:3px;}
+.ic-sub{font-size:11px;color:rgba(18,16,14,.5);line-height:1.4;}
+.ic-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.bdg{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;}
+.bdg-g{background:rgba(42,122,106,.1);color:var(--teal);}
+.bdg-y{background:rgba(200,151,58,.12);color:var(--gold);}
+.bdg-r{background:rgba(184,76,48,.1);color:var(--rust);}
+
+.act-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.act-item{display:flex;gap:9px;align-items:flex-start;background:#fff;padding:11px 13px;border-radius:9px;border:1px solid var(--sand);}
+.act-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
+.act-body strong{font-size:12px;font-weight:600;display:block;}
+.act-body span{font-size:11px;color:rgba(18,16,14,.5);}
+
+.budget-row{background:var(--ink);color:var(--cream);border-radius:12px;padding:18px 22px;margin-top:5px;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:14px;}
+.bi p{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(247,242,234,.38);margin-bottom:3px;}
+.bi strong{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--gold);}
+.bi span{font-size:10px;color:rgba(247,242,234,.38);}
+
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:520px){.ov-grid{grid-template-columns:1fr;}}
+.ov-c{background:#fff;border-radius:11px;border:1px solid var(--sand);padding:16px;}
+.ov-c h4{font-family:'Cormorant Garamond',serif;font-size:15px;margin-bottom:9px;}
+.ov-ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.ov-ul li{font-size:12px;color:rgba(18,16,14,.62);display:flex;gap:5px;align-items:baseline;}
+.ov-ul li::before{content:'→';color:var(--gold);font-size:9px;flex-shrink:0;}
+
+.spin-wrap{text-align:center;padding:55px 20px;}
+.spinner{width:34px;height:34px;border:3px solid var(--sand);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spin-txt{font-size:13px;color:rgba(18,16,14,.4);}
+.spin-txt strong{color:var(--gold);}
+
+/* GRID / TOP10 */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:11px;margin-top:16px;}
+.cc{background:#fff;border-radius:11px;border:1px solid var(--sand);padding:15px;cursor:pointer;transition:all .2s;}
+.cc:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 5px 18px rgba(200,151,58,.12);}
+.cc-f{font-size:24px;margin-bottom:7px;}.cc-n{font-weight:600;font-size:13px;margin-bottom:2px;}.cc-c{font-size:10px;color:rgba(18,16,14,.4);}
+.cc-b{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:9px;font-size:10px;font-weight:600;background:rgba(200,151,58,.12);color:var(--gold);}
+.fi{width:100%;max-width:380px;padding:9px 14px;border:1.5px solid var(--sand);border-radius:7px;font-family:'Outfit',sans-serif;font-size:13px;outline:none;background:var(--cream);margin-bottom:5px;}
+.fi:focus{border-color:var(--gold);}
+.pb-w{background:var(--sand);border-radius:3px;height:4px;margin-top:5px;overflow:hidden;width:170px;}
+.pb{background:linear-gradient(90deg,var(--gold),var(--gold-l));height:100%;border-radius:3px;transition:width .5s;}
+.pb-l{font-size:10px;color:rgba(18,16,14,.4);margin-top:3px;}
+.t10-w{display:flex;flex-direction:column;gap:12px;}
+.t10c{background:#fff;border-radius:12px;border:1px solid var(--sand);padding:16px 20px;display:flex;gap:16px;transition:all .2s;cursor:pointer;}
+.t10c:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(200,151,58,.1);}
+.t10r{font-family:'Cormorant Garamond',serif;font-size:38px;color:var(--gold);opacity:.32;line-height:1;min-width:40px;text-align:center;}
+.t10b h3{font-family:'Cormorant Garamond',serif;font-size:17px;margin-bottom:2px;}
+.t10b p{font-size:12px;color:rgba(18,16,14,.55);line-height:1.5;}
+.t10-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;}
+.t10-tag{background:var(--sand);padding:2px 8px;border-radius:9px;font-size:10px;font-weight:500;}
+.t10-hint{font-size:10px;color:rgba(18,16,14,.3);margin-top:5px;font-style:italic;}
+.empty-s{text-align:center;padding:44px 20px;color:rgba(18,16,14,.3);font-size:13px;font-style:italic;}
+
+@media(max-width:600px){
+  header{padding:16px;}.main{padding:16px 12px;}
+  .t10c{flex-direction:column;gap:8px;}
+  .m-body{padding:16px 14px;}
+  .m-hero{padding:18px 18px 16px;}
+}
+</style>
+</head>
+<body>
+<div id="tooltip"></div>
+
+<!-- ITINERARY MODAL -->
+<div id="itin-overlay">
+  <div id="itin-modal">
+    <div class="m-hero">
+      <div class="m-hero-row">
+        <div class="m-flag" id="m-flag">🌍</div>
+        <button class="m-close" onclick="closeItin()">✕</button>
+      </div>
+      <div class="m-name" id="m-name">País</div>
+      <div class="m-tag" id="m-tag">Gerando seu roteiro...</div>
+    </div>
+    <div class="days-nav" id="days-nav"></div>
+    <div class="m-body" id="m-body">
+      <div class="spin-wrap"><div class="spinner"></div><p class="spin-txt">✈️ Pesquisando hotéis, restaurantes e atrações...<br><strong>Criando roteiro personalizado</strong></p></div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div>
+    <div class="h-title">Marília · <em>World Traveler</em></div>
+    <div class="h-sub">✈ Every stamp tells a story</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="sn" id="sc">0</span><span class="sl">Países</span></div>
+    <div class="stat"><span class="sn" id="sct">0</span><span class="sl">Cidades</span></div>
+    <div class="stat"><span class="sn" id="sp">0%</span><span class="sl">do Mundo</span></div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('map')">🗺 Mapa</button>
+  <button onclick="showTab('countries')">🏳 Visitados</button>
+  <button onclick="showTab('top10')">⭐ Top 10</button>
+</nav>
+
+<main>
+<!-- MAP TAB -->
+<div class="tab active" id="tab-map">
+  <div class="map-bar">
+    <div>
+      <h2 style="font-family:'Cormorant Garamond',serif">Seu mapa do mundo</h2>
+      <p style="font-size:11px;color:rgba(18,16,14,.45);margin-top:2px">Clique num país para ver o itinerário completo com hotéis, restaurantes e atrações</p>
+    </div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:var(--visited)"></div>Visitado</div>
+      <div class="li"><div class="ld" style="background:var(--rust)"></div>Selecionado</div>
+      <div class="li"><div class="ld" style="background:var(--unvisited)"></div>Não visitado</div>
+    </div>
+  </div>
+
+  <div id="world-map">
+    <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1000" height="500" fill="#bdd5e0"/>
+      <path class="country" data-name="Canadá" d="M60,40 L280,40 L300,80 L280,120 L200,130 L160,110 L80,120 L50,90 Z"/>
+      <path class="country" data-name="EUA" d="M80,130 L280,125 L300,140 L290,180 L240,195 L180,200 L100,185 L70,165 Z"/>
+      <path class="country" data-name="México" d="M80,200 L200,195 L220,215 L190,240 L140,245 L90,230 Z"/>
+      <path class="country" data-name="Guatemala" d="M120,245 L145,243 L150,258 L130,262 Z"/>
+      <path class="country" data-name="Cuba" d="M175,210 L215,208 L218,218 L175,220 Z"/>
+      <path class="country" data-name="Jamaica" d="M190,225 L206,224 L207,233 L191,234 Z"/>
+      <path class="country" data-name="Haiti" d="M216,220 L233,219 L234,229 L217,230 Z"/>
+      <path class="country" data-name="República Dominicana" d="M234,218 L251,217 L252,228 L235,229 Z"/>
+      <path class="country" data-name="Colômbia" d="M155,258 L210,253 L215,285 L195,300 L158,292 Z"/>
+      <path class="country" data-name="Venezuela" d="M210,253 L255,250 L260,270 L215,285 Z"/>
+      <path class="country" data-name="Brasil" d="M178,295 L295,272 L320,308 L310,378 L265,398 L205,383 L168,348 L158,313 Z"/>
+      <path class="country" data-name="Peru" d="M153,293 L183,288 L178,338 L148,353 L133,323 Z"/>
+      <path class="country" data-name="Equador" d="M146,288 L173,285 L178,308 L148,312 Z"/>
+      <path class="country" data-name="Bolívia" d="M180,338 L215,328 L220,363 L183,368 Z"/>
+      <path class="country" data-name="Paraguai" d="M213,363 L248,358 L252,390 L216,393 Z"/>
+      <path class="country" data-name="Uruguai" d="M216,393 L250,388 L255,410 L220,413 Z"/>
+      <path class="country" data-name="Chile" d="M146,348 L163,343 L163,443 L146,438 Z"/>
+      <path class="country" data-name="Argentina" d="M163,383 L228,378 L233,428 L198,458 L163,443 Z"/>
+      <path class="country" data-name="Portugal" d="M378,138 L390,137 L393,160 L379,161 Z"/>
+      <path class="country" data-name="Espanha" d="M391,133 L428,131 L433,157 L391,161 Z"/>
+      <path class="country" data-name="França" d="M398,112 L433,108 L438,134 L398,137 Z"/>
+      <path class="country" data-name="Reino Unido" d="M388,92 L413,90 L416,114 L390,117 Z"/>
+      <path class="country" data-name="Irlanda" d="M370,90 L388,88 L389,108 L371,110 Z"/>
+      <path class="country" data-name="Holanda" d="M418,95 L433,93 L435,106 L419,107 Z"/>
+      <path class="country" data-name="Bélgica" d="M413,105 L430,103 L431,116 L414,117 Z"/>
+      <path class="country" data-name="Alemanha" d="M428,103 L460,100 L463,126 L430,128 Z"/>
+      <path class="country" data-name="Suíça" d="M416,126 L433,124 L434,138 L417,139 Z"/>
+      <path class="country" data-name="Áustria" d="M434,116 L460,114 L461,128 L435,129 Z"/>
+      <path class="country" data-name="Itália" d="M430,128 L458,126 L460,163 L438,173 L431,158 Z"/>
+      <path class="country" data-name="Polônia" d="M448,93 L480,91 L483,113 L450,115 Z"/>
+      <path class="country" data-name="República Tcheca" d="M445,108 L461,106 L463,118 L447,119 Z"/>
+      <path class="country" data-name="Hungria" d="M458,116 L486,114 L488,130 L460,131 Z"/>
+      <path class="country" data-name="Croácia" d="M445,138 L463,136 L465,153 L447,154 Z"/>
+      <path class="country" data-name="Grécia" d="M458,150 L483,148 L485,170 L460,172 Z"/>
+      <path class="country" data-name="Suécia" d="M438,48 L460,46 L463,88 L440,90 Z"/>
+      <path class="country" data-name="Noruega" d="M413,40 L440,38 L441,88 L416,90 Z"/>
+      <path class="country" data-name="Finlândia" d="M460,43 L488,40 L491,86 L462,88 Z"/>
+      <path class="country" data-name="Dinamarca" d="M428,83 L443,81 L445,93 L429,94 Z"/>
+      <path class="country" data-name="Turquia" d="M485,143 L543,138 L546,166 L487,168 Z"/>
+      <path class="country" data-name="Islândia" d="M333,48 L368,46 L370,73 L335,75 Z"/>
+      <path class="country" data-name="Rússia" d="M488,38 L798,28 L808,108 L648,128 L518,133 L488,88 Z"/>
+      <path class="country" data-name="Ucrânia" d="M480,116 L520,113 L523,138 L482,141 Z"/>
+      <path class="country" data-name="Cazaquistão" d="M568,108 L648,103 L650,148 L570,151 Z"/>
+      <path class="country" data-name="Israel" d="M521,173 L531,172 L532,184 L522,185 Z"/>
+      <path class="country" data-name="Emirados Árabes" d="M581,186 L603,184 L605,198 L583,199 Z"/>
+      <path class="country" data-name="Arábia Saudita" d="M538,173 L588,168 L593,213 L540,216 Z"/>
+      <path class="country" data-name="Egito" d="M500,183 L536,180 L538,213 L502,215 Z"/>
+      <path class="country" data-name="Irã" d="M583,148 L633,143 L636,180 L585,183 Z"/>
+      <path class="country" data-name="Iraque" d="M543,153 L583,150 L585,180 L545,183 Z"/>
+      <path class="country" data-name="Marrocos" d="M380,168 L418,166 L420,203 L382,206 Z"/>
+      <path class="country" data-name="Argélia" d="M388,208 L458,204 L460,248 L390,251 Z"/>
+      <path class="country" data-name="Tunísia" d="M428,166 L448,165 L449,188 L429,189 Z"/>
+      <path class="country" data-name="Líbia" d="M458,203 L508,200 L510,243 L460,246 Z"/>
+      <path class="country" data-name="Senegal" d="M366,253 L393,251 L394,273 L368,275 Z"/>
+      <path class="country" data-name="Gana" d="M403,266 L428,264 L430,288 L405,290 Z"/>
+      <path class="country" data-name="Nigéria" d="M428,268 L478,264 L481,308 L430,311 Z"/>
+      <path class="country" data-name="Etiópia" d="M538,253 L583,250 L586,293 L540,296 Z"/>
+      <path class="country" data-name="Quênia" d="M526,288 L566,285 L569,323 L528,326 Z"/>
+      <path class="country" data-name="Tanzânia" d="M526,326 L566,323 L569,358 L528,361 Z"/>
+      <path class="country" data-name="Angola" d="M453,313 L493,310 L496,353 L456,356 Z"/>
+      <path class="country" data-name="Moçambique" d="M508,328 L536,326 L538,378 L510,380 Z"/>
+      <path class="country" data-name="África do Sul" d="M453,358 L508,354 L511,398 L456,401 Z"/>
+      <path class="country" data-name="Madagascar" d="M558,328 L578,326 L580,388 L560,390 Z"/>
+      <path class="country" data-name="Índia" d="M621,173 L683,168 L688,248 L653,278 L618,258 L613,218 Z"/>
+      <path class="country" data-name="Paquistão" d="M588,158 L623,155 L626,198 L590,201 Z"/>
+      <path class="country" data-name="Nepal" d="M638,168 L668,166 L670,180 L640,181 Z"/>
+      <path class="country" data-name="Bangladesh" d="M682,193 L698,191 L700,213 L684,215 Z"/>
+      <path class="country" data-name="Sri Lanka" d="M656,268 L668,267 L669,283 L657,284 Z"/>
+      <path class="country" data-name="Mianmar" d="M686,181 L710,179 L713,213 L688,216 Z"/>
+      <path class="country" data-name="Tailândia" d="M688,213 L718,210 L720,243 L690,246 Z"/>
+      <path class="country" data-name="Vietnã" d="M718,198 L738,196 L740,238 L720,240 Z"/>
+      <path class="country" data-name="Camboja" d="M708,236 L723,235 L724,253 L709,254 Z"/>
+      <path class="country" data-name="Malásia" d="M698,246 L728,244 L730,260 L700,262 Z"/>
+      <path class="country" data-name="Cingapura" d="M710,260 L718,259 L719,266 L711,267 Z"/>
+      <path class="country" data-name="Indonésia" d="M718,268 L808,263 L810,293 L720,296 Z"/>
+      <path class="country" data-name="Filipinas" d="M748,208 L776,206 L778,246 L750,248 Z"/>
+      <path class="country" data-name="China" d="M648,128 L778,118 L788,193 L738,208 L686,213 L648,193 Z"/>
+      <path class="country" data-name="Japão" d="M798,143 L823,140 L826,183 L800,185 Z"/>
+      <path class="country" data-name="Coreia do Sul" d="M768,168 L791,166 L793,188 L770,190 Z"/>
+      <path class="country" data-name="Taiwan" d="M773,198 L786,197 L787,210 L774,211 Z"/>
+      <path class="country" data-name="Austrália" d="M748,308 L878,298 L888,398 L753,406 Z"/>
+      <path class="country" data-name="Nova Zelândia" d="M878,378 L903,376 L906,418 L880,420 Z"/>
+    </svg>
+  </div>
+
+  <div id="country-panel">
+    <div class="ph">
+      <h3 id="panel-name">País</h3>
+      <div class="pacts">
+        <button class="btn btn-teal" onclick="openItin()">🗺 Roteiro Completo com IA</button>
+        <button class="btn btn-gold" id="btn-v">✓ Marcar visitado</button>
+        <button class="btn btn-out" onclick="closePanel()">Fechar</button>
+      </div>
+    </div>
+    <div>
+      <p class="sec-label">Cidades visitadas</p>
+      <div class="city-row">
+        <input type="text" id="city-inp" placeholder="Adicionar cidade..." onkeydown="if(event.key==='Enter')addCity()"/>
+        <button class="btn btn-gold" onclick="addCity()">+ Add</button>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="notes-area">
+      <p class="sec-label" style="margin-top:12px">Memórias & anotações</p>
+      <textarea id="notes" placeholder="Suas memórias, dicas, lugares favoritos..." oninput="saveNote()"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTRIES TAB -->
+<div class="tab" id="tab-countries">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px">Países do Mundo</h2>
+      <p style="font-size:11px;color:rgba(18,16,14,.45);margin-top:2px">Busque qualquer país · clique para ver roteiro ou marcar como visitado</p>
+    </div>
+    <div><div class="pb-w"><div class="pb" id="pb" style="width:0%"></div></div><div class="pb-l" id="pb-l">0 de 195 visitados</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+    <input class="fi" style="flex:1;min-width:180px;margin:0" type="text" id="grid-search" placeholder="🔍 Buscar qualquer país do mundo..." oninput="renderGrid(this.value)"/>
+    <button class="btn btn-out" style="font-size:11px;white-space:nowrap" onclick="setGridFilter('all')">Todos</button>
+    <button class="btn btn-out" style="font-size:11px;white-space:nowrap" onclick="setGridFilter('visited')">✓ Visitados</button>
+    <button class="btn btn-out" style="font-size:11px;white-space:nowrap" onclick="setGridFilter('unvisited')">Não visitados</button>
+  </div>
+  <div class="cg" id="cg"></div>
+</div>
+
+<!-- TOP 10 TAB -->
+<div class="tab" id="tab-top10">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+    <div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px">Top 10 · Próximos Destinos</h2>
+      <p style="font-size:11px;color:rgba(18,16,14,.4);margin-top:2px">Clique num destino para ver o roteiro completo</p>
+    </div>
+    <button class="btn btn-gold" onclick="loadTop10()">✨ Gerar com IA</button>
+  </div>
+  <div class="t10-w" id="t10"><div class="empty-s">Clique em <strong>"Gerar com IA"</strong> para ver os melhores destinos ✈️</div></div>
+</div>
+</main>
+
+<script>
+let D = JSON.parse(localStorage.getItem('mwt3')||'{}');
+let sel = null;
+const TOTAL = 195;
+const FL = {'Brasil':'🇧🇷','EUA':'🇺🇸','Argentina':'🇦🇷','Chile':'🇨🇱','Colômbia':'🇨🇴','Peru':'🇵🇪','Uruguai':'🇺🇾','Paraguai':'🇵🇾','Bolívia':'🇧🇴','Equador':'🇪🇨','Venezuela':'🇻🇪','França':'🇫🇷','Espanha':'🇪🇸','Itália':'🇮🇹','Portugal':'🇵🇹','Alemanha':'🇩🇪','Reino Unido':'🇬🇧','Holanda':'🇳🇱','Bélgica':'🇧🇪','Suíça':'🇨🇭','Áustria':'🇦🇹','Grécia':'🇬🇷','Polônia':'🇵🇱','Hungria':'🇭🇺','Suécia':'🇸🇪','Noruega':'🇳🇴','Finlândia':'🇫🇮','Dinamarca':'🇩🇰','Turquia':'🇹🇷','Islândia':'🇮🇸','Irlanda':'🇮🇪','Croácia':'🇭🇷','República Tcheca':'🇨🇿','Japão':'🇯🇵','China':'🇨🇳','Coreia do Sul':'🇰🇷','Tailândia':'🇹🇭','Vietnã':'🇻🇳','Indonésia':'🇮🇩','Índia':'🇮🇳','Austrália':'🇦🇺','Nova Zelândia':'🇳🇿','México':'🇲🇽','Canadá':'🇨🇦','Cuba':'🇨🇺','Jamaica':'🇯🇲','Egito':'🇪🇬','Marrocos':'🇲🇦','África do Sul':'🇿🇦','Quênia':'🇰🇪','Tanzânia':'🇹🇿','Emirados Árabes':'🇦🇪','Israel':'🇮🇱','Arábia Saudita':'🇸🇦','Filipinas':'🇵🇭','Malásia':'🇲🇾','Cingapura':'🇸🇬','Taiwan':'🇹🇼','Nepal':'🇳🇵','Camboja':'🇰🇭','Rússia':'🇷🇺','Ucrânia':'🇺🇦','Cazaquistão':'🇰🇿','Senegal':'🇸🇳','Nigéria':'🇳🇬','Angola':'🇦🇴','Etiópia':'🇪🇹','Guatemala':'🇬🇹','Haiti':'🇭🇹','República Dominicana':'🇩🇴','Tunísia':'🇹🇳','Argélia':'🇩🇿','Moçambique':'🇲🇿','Madagascar':'🇲🇬','Gana':'🇬🇭','Sri Lanka':'🇱🇰','Bangladesh':'🇧🇩','Mianmar':'🇲🇲','Paquistão':'🇵🇰','Líbia':'🇱🇾','Irã':'🇮🇷','Iraque':'🇮🇶'};
+
+const sv = ()=>localStorage.setItem('mwt3',JSON.stringify(D));
+
+function upStats(){
+  const v=Object.keys(D).length; let c=0; Object.values(D).forEach(d=>c+=(d.cities||[]).length);
+  const p=Math.round(v/TOTAL*100);
+  document.getElementById('sc').textContent=v; document.getElementById('sct').textContent=c; document.getElementById('sp').textContent=p+'%';
+  const pb=document.getElementById('pb'); if(pb)pb.style.width=p+'%';
+  const pbl=document.getElementById('pb-l'); if(pbl)pbl.textContent=`${v} de ${TOTAL} países (${p}%)`;
+}
+
+document.querySelectorAll('.country').forEach(el=>{
+  const n=el.getAttribute('data-name');
+  if(D[n])el.classList.add('visited');
+  el.addEventListener('mouseenter',e=>{const t=document.getElementById('tooltip');t.innerHTML=`<strong>${n}</strong>${D[n]?' ✓':''}`;t.classList.add('show');});
+  el.addEventListener('mousemove',e=>{const t=document.getElementById('tooltip');t.style.left=(e.clientX+13)+'px';t.style.top=(e.clientY-9)+'px';});
+  el.addEventListener('mouseleave',()=>document.getElementById('tooltip').classList.remove('show'));
+  el.addEventListener('click',()=>openPanel(n,el));
+});
+
+function openPanel(n,el){
+  if(sel){const p=document.querySelector('.country.selected');if(p){p.classList.remove('selected');if(D[p.getAttribute('data-name')])p.classList.add('visited');}}
+  sel=n; if(el){el.classList.remove('visited');el.classList.add('selected');}
+  const pnl=document.getElementById('country-panel');
+  pnl.classList.remove('show');void pnl.offsetWidth;pnl.classList.add('show');
+  document.getElementById('panel-name').textContent=(FL[n]||'🌍')+' '+n;
+  const bv=document.getElementById('btn-v');
+  bv.textContent=D[n]?'✗ Remover visitado':'✓ Marcar visitado';
+  bv.onclick=()=>toggleV(n);
+  document.getElementById('notes').value=D[n]?.notes||'';
+  renderChips(n);
+  pnl.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closePanel(){
+  if(sel){const el=document.querySelector(`[data-name="${sel}"]`);if(el){el.classList.remove('selected');if(D[sel])el.classList.add('visited');}}
+  sel=null; document.getElementById('country-panel').classList.remove('show');
+}
+
+function toggleV(n){
+  if(D[n])delete D[n]; else D[n]={cities:[],notes:''};
+  const el=document.querySelector(`[data-name="${n}"]`);
+  if(el){el.classList.toggle('visited',!!D[n]);}
+  document.getElementById('btn-v').textContent=D[n]?'✗ Remover visitado':'✓ Marcar visitado';
+  sv();upStats();renderGrid('');
+}
+
+function addCity(){
+  const inp=document.getElementById('city-inp'),city=inp.value.trim();
+  if(!city||!sel)return;
+  if(!D[sel])D[sel]={cities:[],notes:''};
+  if(!D[sel].cities.includes(city))D[sel].cities.push(city);
+  const el=document.querySelector(`[data-name="${sel}"]`);if(el)el.classList.add('visited');
+  document.getElementById('btn-v').textContent='✗ Remover visitado';
+  inp.value='';sv();upStats();renderChips(sel);renderGrid();
+}
+
+function renderChips(n){
+  const c=document.getElementById('chips'),cities=D[n]?.cities||[];
+  c.innerHTML=cities.length?cities.map((x,i)=>`<div class="chip">📍${x}<button onclick="rmCity('${n}',${i})">×</button></div>`).join(''):'<span style="font-size:11px;color:rgba(18,16,14,.3);font-style:italic">Nenhuma cidade ainda</span>';
+}
+
+function rmCity(n,i){D[n].cities.splice(i,1);sv();upStats();renderChips(n);renderGrid();}
+function saveNote(){if(!sel)return;if(!D[sel])D[sel]={cities:[],notes:''};D[sel].notes=document.getElementById('notes').value;sv();}
+
+let gridFilter = 'all';
+function setGridFilter(f){ gridFilter=f; renderGrid(document.getElementById('grid-search')?.value||''); }
+
+function renderGrid(f=''){
+  const g=document.getElementById('cg');
+  if(!g) return;
+  const ALL_C = Object.keys(FL).sort((a,b)=>a.localeCompare(b,'pt'));
+  let keys = ALL_C;
+  if(gridFilter==='visited') keys=keys.filter(k=>D[k]);
+  else if(gridFilter==='unvisited') keys=keys.filter(k=>!D[k]);
+  if(f) keys=keys.filter(k=>k.toLowerCase().includes(f.toLowerCase()));
+  if(!keys.length){ g.innerHTML='<div class="empty-s" style="grid-column:1/-1">Nenhum resultado.</div>'; return; }
+  g.innerHTML = keys.map(function(n){
+    var c = (D[n] && D[n].cities) ? D[n].cities : [];
+    var isV = !!D[n];
+    var flag = FL[n] || '🌍';
+    var sub = isV ? (c.length ? c.join(', ') : 'Sem cidades anotadas') : 'Clique para ver roteiro completo';
+    var visitBtn = isV
+      ? '<button class="btn btn-danger" style="font-size:10px;padding:5px 10px;margin-top:8px" onclick="event.stopPropagation();toggleVGrid(\''+n+'\')">✗ Remover visitado</button>'
+      : '<button class="btn btn-gold" style="font-size:10px;padding:5px 10px;margin-top:8px" onclick="event.stopPropagation();toggleVGrid(\''+n+'\')">✓ Marcar visitado</button>';
+    var itinBtn = '<button class="btn btn-teal" style="font-size:10px;padding:5px 10px;margin-top:8px;margin-left:5px" onclick="event.stopPropagation();openItinFor(\''+n+'\',\''+flag+'\')">🗺 Ver roteiro</button>';
+    return '<div class="cc" data-n="'+n+'" data-f="'+flag+'">'
+      + '<div class="cc-f">'+flag+'</div>'
+      + '<div class="cc-n">'+n+'</div>'
+      + '<div class="cc-c">'+sub+'</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:4px">' + visitBtn + itinBtn + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ===== TOGGLE VISITED FROM GRID =====
+function toggleVGrid(n){
+  if(D[n]) delete D[n];
+  else D[n]={cities:[],notes:''};
+  var el=document.querySelector('[data-name="'+n+'"]');
+  if(el) el.classList.toggle('visited',!!D[n]);
+  sv(); upStats();
+  renderGrid(document.getElementById('grid-search')?.value||'');
+}
+
+// ===== TOP 10 =====
+async function loadTop10(){
+  const w=document.getElementById('t10');
+  w.innerHTML='<div class="spin-wrap"><div class="spinner"></div><p class="spin-txt">Consultando análises de viagem...<br><strong>Aguarde</strong></p></div>';
+  const v=Object.keys(D);
+  const prompt=`Especialista em viagens. Visitados: ${v.length?v.join(', '):'nenhum'}.
+TOP 10 destinos não visitados. SOMENTE JSON válido sem markdown:
+[{"rank":1,"country":"Nome","flag":"🏳","highlight":"frase","description":"2-3 frases","tags":["a","b"],"topCity":"Cidade"}]`;
+  try{
+    const r=await fetch('/.netlify/functions/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    const list=JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+    w.innerHTML=list.map(x=>`<div class="t10c" onclick="openItinFor('${x.country}','${x.flag}')"><div class="t10r">${x.rank}</div><div class="t10b"><h3>${x.flag} ${x.country} — <em style="font-weight:300;font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--teal)">${x.highlight}</em></h3><p>${x.description}</p>${x.topCity?`<p style="font-size:11px;color:var(--teal);margin-top:3px">📍 ${x.topCity}</p>`:''}<div class="t10-tags">${(x.tags||[]).map(t=>`<span class="t10-tag">${t}</span>`).join('')}</div><p class="t10-hint">Clique para ver roteiro completo →</p></div></div>`).join('');
+  } catch(e) {
+    console.error('TOP10 ERROR:', e);
+    w.innerHTML = '<div class="empty-s">⚠️ ' + (e.message||'Erro') + '<br><button class="btn btn-gold" style="margin-top:12px" onclick="loadTop10()">🔄 Tentar novamente</button></div>';
+  }
+}
+
+// ===== ITINERARY =====
+function openItin(){ if(sel) openItinFor(sel, FL[sel]||'🌍'); }
+
+async function openItinFor(country, flag){
+  const ov=document.getElementById('itin-overlay');
+  ov.classList.add('open'); document.body.style.overflow='hidden';
+  document.getElementById('m-flag').textContent=flag||FL[country]||'🌍';
+  document.getElementById('m-name').textContent=country;
+  document.getElementById('m-tag').textContent='Gerando roteiro personalizado...';
+  document.getElementById('days-nav').innerHTML='';
+
+  // Check if already visited + show mark button in hero
+  const heroRow = document.getElementById('m-hero-actions');
+  if(heroRow){
+    heroRow.innerHTML = D[country]
+      ? '<button class="btn btn-danger" style="font-size:11px" onclick="unmarkVisited(\''+country+'\')">✗ Remover visitado</button>'
+      : '<button class="btn btn-gold" style="font-size:11px" onclick="markVisited(\''+country+'\')">✓ Já visitei!</button>';
+  }
+
+  document.getElementById('m-body').innerHTML='<div class="spin-wrap"><div class="spinner"></div><p class="spin-txt">✈️ Pesquisando hotéis, restaurantes e atrações...<br><strong>Gerando roteiro para '+country+'</strong></p></div>';
+
+  const nDays = ['EUA','China','Índia','Austrália','Brasil','Rússia','Canadá','Indonésia'].includes(country)?7:['França','Alemanha','Japão','Tailândia','Itália','Turquia','México','Argentina'].includes(country)?5:4;
+
+  const prompt = `Você é especialista em turismo. Crie roteiro para ${country} para turista brasileiro.
+Responda APENAS com JSON puro, sem nenhum texto antes ou depois, sem blocos de código markdown.
+JSON deve ter exatamente esta estrutura (com ${nDays} objetos em "days"):
+{"days_needed":${nDays},"tagline":"frase inspiradora sobre ${country}","best_season":"melhor época","currency":"moeda local e câmbio em BRL","overview":{"highlights":["destaque1","destaque2","destaque3"],"tips":["dica1","dica2","dica3"],"visa":"info visto para brasileiros","vaccinations":["vacina se necessário"]},"budget":{"budget_per_day_usd":80,"mid_per_day_usd":180,"luxury_per_day_usd":400,"total_trip_usd":1200,"total_trip_brl":6000},"days":[{"day":1,"city":"Cidade","theme":"Tema do dia","hotel":{"name":"Nome Real do Hotel","stars":4,"rating":9.0,"price_usd_night":100,"highlight":"por que esse hotel"},"restaurant_lunch":{"name":"Nome Real","cuisine":"tipo","price_range":"$$","must_try":"prato"},"restaurant_dinner":{"name":"Nome Real","cuisine":"tipo","price_range":"$$$","must_try":"prato"},"activities":[{"time":"09:00","name":"Atração Real","description":"breve descrição","duration":"2h","price_usd":0,"icon":"🏛"},{"time":"14:00","name":"Atração Real","description":"breve descrição","duration":"2h","price_usd":20,"icon":"🎨"},{"time":"19:00","name":"Programa noturno","description":"breve descrição","duration":"2h","price_usd":0,"icon":"🌆"}]}]}
+Use nomes REAIS de hotéis e restaurantes famosos de ${country}. Gere exatamente ${nDays} dias.`;
+
+  try{
+    const r = await fetch('/.netlify/functions/claude', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:4000, messages:[{role:'user',content:prompt}]})
+    });
+    if(!r.ok){ throw new Error('HTTP '+r.status); }
+    const d = await r.json();
+    if(!d.content || !d.content[0]){ throw new Error('No content'); }
+    let raw = d.content[0].text;
+    // Strip markdown fences if present
+    raw = raw.replace(/^```[a-z]*\n?/,'').replace(/\n?```$/,'').trim();
+    // Find first { and last } to extract JSON
+    const jsonStart = raw.indexOf('{');
+    const jsonEnd = raw.lastIndexOf('}');
+    if(jsonStart === -1){ throw new Error('No JSON found'); }
+    raw = raw.slice(jsonStart, jsonEnd+1);
+    const itin = JSON.parse(raw);
+    renderItin(country, itin);
+  } catch(e) {
+    console.error('ITIN ERROR:', e);
+    var errMsg = e.message || 'Erro desconhecido';
+    document.getElementById('m-body').innerHTML = 
+      '<div class="spin-wrap"><p class="spin-txt" style="color:#b84c30;font-size:13px">'
+      + '⚠️ ' + errMsg
+      + '<br><br><small style="opacity:.6">Verifique o console para detalhes</small>'
+      + '</div>';
+  }
+}
+
+function renderItin(country,itin){
+  document.getElementById('m-tag').textContent=itin.tagline||'';
+  const nav=document.getElementById('days-nav');
+  const tabs=['📋 Visão Geral',...itin.days.map(d=>`Dia ${d.day}`)];
+  nav.innerHTML=tabs.map((t,i)=>`<button class="dbt ${i===0?'active':''}" onclick="switchDay(${i})">${t}</button>`).join('');
+
+  let html='';
+  // Overview
+  html+=`<div class="dc active" id="dt0">
+  <div class="ov-grid">
+    <div class="ov-c"><h4>✨ Destaques</h4><ul class="ov-ul">${(itin.overview?.highlights||[]).map(h=>`<li>${h}</li>`).join('')}</ul></div>
+    <div class="ov-c"><h4>💡 Dicas Práticas</h4><ul class="ov-ul">${(itin.overview?.tips||[]).map(t=>`<li>${t}</li>`).join('')}</ul></div>
+    <div class="ov-c"><h4>🧳 Informações</h4><ul class="ov-ul"><li>🗓 <strong>Melhor época:</strong> ${itin.best_season||'—'}</li><li>💰 <strong>Moeda:</strong> ${itin.currency||'—'}</li><li>🛂 <strong>Visto:</strong> ${itin.overview?.visa||'—'}</li>${(itin.overview?.vaccinations||[]).map(v=>`<li>💉 ${v}</li>`).join('')}</ul></div>
+    <div class="ov-c"><h4>📅 Duração</h4><ul class="ov-ul"><li>${itin.days_needed} dias ideais para explorar bem</li><li>Roteiro completo com ${itin.days.length} dias detalhados</li></ul></div>
+  </div>
+  <div class="budget-row" style="margin-top:12px">
+    <div class="bi"><p>Econômico/dia</p><strong>$${itin.budget?.budget_per_day_usd||0}</strong><span> USD</span></div>
+    <div class="bi"><p>Intermediário/dia</p><strong>$${itin.budget?.mid_per_day_usd||0}</strong><span> USD</span></div>
+    <div class="bi"><p>Luxo/dia</p><strong>$${itin.budget?.luxury_per_day_usd||0}</strong><span> USD</span></div>
+    <div class="bi"><p>Viagem completa</p><strong>R$${(itin.budget?.total_trip_brl||0).toLocaleString('pt-BR')}</strong><span> estimativa</span></div>
+  </div></div>`;
+
+  itin.days.forEach((day,i)=>{
+    const stars='★'.repeat(day.hotel?.stars||4)+'☆'.repeat(5-(day.hotel?.stars||4));
+    const actCost=(day.activities||[]).reduce((s,a)=>s+(a.price_usd||0),0);
+    const mealCost=Math.round(
+      (day.restaurant_lunch?.price_range==='$'?12:day.restaurant_lunch?.price_range==='$$'?28:50)+
+      (day.restaurant_dinner?.price_range==='$'?18:day.restaurant_dinner?.price_range==='$$'?42:75));
+    html+=`<div class="dc" id="dt${i+1}">
+    <div class="day-hdr">
+      <div class="day-num">D${day.day}</div>
+      <div class="day-info"><h4>${day.city} — ${day.theme}</h4><p>📍 ${day.city}</p></div>
+    </div>
+    <div class="cgrid">
+      <div class="ic"><div class="ic-type">🏨 Hotel</div><div class="ic-title">${day.hotel?.name||'—'}</div><div class="ic-sub">${day.hotel?.highlight||''}</div><div class="ic-meta"><span class="bdg bdg-y">${stars} ${day.hotel?.stars||4}★</span><span class="bdg bdg-g">⭐ ${day.hotel?.rating||8.5}/10</span><span class="bdg bdg-r">$${day.hotel?.price_usd_night||100}/noite</span></div></div>
+      <div class="ic"><div class="ic-type">🍽 Almoço</div><div class="ic-title">${day.restaurant_lunch?.name||'—'}</div><div class="ic-sub">${day.restaurant_lunch?.cuisine||''}</div><div class="ic-meta"><span class="bdg bdg-y">${day.restaurant_lunch?.price_range||'$$'}</span>${day.restaurant_lunch?.must_try?`<span class="bdg bdg-g">🥢 ${day.restaurant_lunch.must_try}</span>`:''}</div></div>
+      <div class="ic"><div class="ic-type">🍷 Jantar</div><div class="ic-title">${day.restaurant_dinner?.name||'—'}</div><div class="ic-sub">${day.restaurant_dinner?.cuisine||''}</div><div class="ic-meta"><span class="bdg bdg-y">${day.restaurant_dinner?.price_range||'$$$'}</span>${day.restaurant_dinner?.must_try?`<span class="bdg bdg-g">🥢 ${day.restaurant_dinner.must_try}</span>`:''}</div></div>
+      <div class="ic"><div class="ic-type">💸 Estimativa do Dia</div><div class="ic-title">Gastos estimados</div><div class="ic-meta" style="flex-direction:column;gap:3px"><span class="bdg bdg-g">🏨 Hotel: $${day.hotel?.price_usd_night||100}</span><span class="bdg bdg-y">🍽 Refeições: ~$${mealCost}</span><span class="bdg bdg-r">🎭 Atrações: ~$${actCost}</span><span class="bdg" style="background:rgba(18,16,14,.07);color:var(--ink)">Total: ~$${(day.hotel?.price_usd_night||100)+mealCost+actCost}</span></div></div>
+    </div>
+    <p class="sec-label" style="margin-bottom:8px">Programação do dia</p>
+    <ul class="act-list">${(day.activities||[]).map(a=>`<li class="act-item"><div class="act-icon">${a.icon||'📍'}</div><div class="act-body"><strong>${a.time||''}${a.time?' · ':''}${a.name}</strong><span>${a.description} · ⏱ ${a.duration||'2h'} · ${a.price_usd>0?'$'+a.price_usd+' USD':'Gratuito'}</span></div></li>`).join('')}
+    </ul></div>`;
+  });
+  document.getElementById('m-body').innerHTML=html;
+}
+
+function switchDay(i){
+  document.querySelectorAll('.dbt').forEach((b,j)=>b.classList.toggle('active',j===i));
+  document.querySelectorAll('.dc').forEach((c,j)=>c.classList.toggle('active',j===i));
+}
+
+function closeItin(){document.getElementById('itin-overlay').classList.remove('open');document.body.style.overflow='';}
+document.getElementById('itin-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('itin-overlay'))closeItin();});
+
+// ===== TABS =====
+function showTab(n){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+n).classList.add('active');
+  ['map','countries','top10'].forEach((t,i)=>document.querySelectorAll('nav button')[i].classList.toggle('active',t===n));
+  if(n==='countries')renderGrid(document.getElementById('grid-search')?.value||'');
+}
+
+upStats();renderGrid('');
+document.querySelectorAll('.country').forEach(el=>{if(D[el.getAttribute('data-name')])el.classList.add('visited');});
+</script>
+</body>
+</html>
